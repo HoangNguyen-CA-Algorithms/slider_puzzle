@@ -7,18 +7,24 @@
 import edu.princeton.cs.algs4.In;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Board {
 
-    private int[][] tiles;
-    private int N;
+    private final int[][] tiles;
+    private final int N;
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
-        this.tiles = tiles;
         this.N = tiles.length;
+
+        // make copy of array
+        this.tiles = new int[N][N];
+        for (int i = 0; i < N; i++) {
+            this.tiles[i] = Arrays.copyOf(tiles[i], tiles[i].length);
+        }
     }
 
     // string representation of this board
@@ -86,8 +92,8 @@ public class Board {
     public boolean equals(Object other) {
         if (other == this) return true;
         if (other == null) return false;
-        Board that = (Board) other;
         if (other.getClass() != this.getClass()) return false;
+        Board that = (Board) other;
         return (this.toString().equals(that.toString()));
     }
 
@@ -128,26 +134,20 @@ public class Board {
 
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
-        if (tiles[0][0] == 0) { // use 2nd square
-            int[][] temp = copyTiles();
-            swap(temp, 0, 1, 1, 1);
-            return new Board(temp);
+        int[][] temp = copyTiles();
+        if (tiles[0][0] == 0) {
+            swap(temp, 1, 1, 0, 1);
         }
         else {
-            if (tiles[0][1] != 0) {
-                int[][] temp = copyTiles();
-                swap(temp, 0, 0, 0, 1);
-                return new Board(temp);
+            if (tiles[0][1] == 0) {
+                swap(temp, 0, 0, 1, 0);
             }
             else {
-                int[][] temp = copyTiles();
-                swap(temp, 0, 0, 1, 0);
-                return new Board(temp);
+                swap(temp, 0, 0, 0, 1);
             }
         }
-
+        return new Board(temp);
     }
-
 
     private int[][] copyTiles() {
         int[][] temp = new int[N][N];
@@ -182,7 +182,7 @@ public class Board {
             // solve the slider puzzle
             Board initial = new Board(tiles);
             System.out.println(initial);
-            System.out.println(initial.manhattan());
+            System.out.println(initial.twin());
         }
 
     }
