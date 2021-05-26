@@ -75,17 +75,7 @@ public class Board {
 
     // is this board the goal board?
     public boolean isGoal() {
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                if (j == N - 1 && i == N - 1) return true;
-
-                int goal = i * N + j + 1;
-                if (tiles[i][j] != goal) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return hamming() == 0;
     }
 
     // does this board equal y?
@@ -94,7 +84,15 @@ public class Board {
         if (other == null) return false;
         if (other.getClass() != this.getClass()) return false;
         Board that = (Board) other;
-        return (this.toString().equals(that.toString()));
+        if (this.dimension() != that.dimension()) return false;
+
+        // check for equality
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                if (tiles[i][j] != that.tiles[i][j]) return false;
+            }
+        }
+        return true;
     }
 
     // all neighboring boards
@@ -105,51 +103,45 @@ public class Board {
                 if (tiles[i][j] == 0) {
                     //check 4 neighbours
                     if (i + 1 < N) {
-                        int[][] temp = copyTiles();
+                        int[][] temp = copy2D(tiles);
                         swap(temp, i, j, i + 1, j);
                         list.add(new Board(temp));
                     }
                     if (i - 1 >= 0) {
-                        int[][] temp = copyTiles();
+                        int[][] temp = copy2D(tiles);
                         swap(temp, i, j, i - 1, j);
                         list.add(new Board(temp));
                     }
                     if (j + 1 < N) {
-                        int[][] temp = copyTiles();
+                        int[][] temp = copy2D(tiles);
                         swap(temp, i, j, i, j + 1);
                         list.add(new Board(temp));
                     }
                     if (j - 1 >= 0) {
-                        int[][] temp = copyTiles();
+                        int[][] temp = copy2D(tiles);
                         swap(temp, i, j, i, j - 1);
                         list.add(new Board(temp));
                     }
+                    break;
                 }
-
             }
         }
-
         return list;
     }
 
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
-        int[][] temp = copyTiles();
-        if (tiles[0][0] == 0) {
-            swap(temp, 1, 1, 0, 1);
+        int[][] temp = copy2D(tiles);
+        if (temp[0][0] != 0 && temp[0][1] != 0) {
+            swap(temp, 0, 0, 0, 1);
         }
         else {
-            if (tiles[0][1] == 0) {
-                swap(temp, 0, 0, 1, 0);
-            }
-            else {
-                swap(temp, 0, 0, 0, 1);
-            }
+            swap(temp, 1, 0, 1, 1);
         }
         return new Board(temp);
     }
 
-    private int[][] copyTiles() {
+    private int[][] copy2D(int[][] tiles) {
         int[][] temp = new int[N][N];
         for (int k = 0; k < temp.length; k++) {
             temp[k] = tiles[k].clone();

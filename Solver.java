@@ -8,7 +8,7 @@ import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.Stack;
 
 public class Solver {
-    private int totalMoves;
+    private int finalMoves;
     private Iterable<Board> finalSolution;
 
     // find a solution to the initial board (using the A* algorithm)
@@ -20,51 +20,47 @@ public class Solver {
 
         priorityQ.insert(new SearchNode(initial, 0));
         priorityQ.insert(new SearchNode(twin, 0));
-        Board prevBoard = null;
-        while (!priorityQ.isEmpty()) {
+
+
+        while (!priorityQ.min().board.isGoal()) {
             SearchNode curr = priorityQ.delMin();
             Board currBoard = curr.board;
-            if (curr.previous != null) {
-                prevBoard = curr.previous.board;
-            }
-
-
-            if (currBoard.isGoal()) {
-                Stack<Board> sol = new Stack<Board>();
-                SearchNode temp = curr;
-
-                while (temp.previous != null) {
-                    sol.push(temp.board);
-                    temp = temp.previous;
-                }
-                // last board
-                if (initial.equals(temp.board)) {
-                    sol.push(temp.board);
-                    totalMoves = curr.moves;
-                    finalSolution = sol;
-                }
-                else {
-                    totalMoves = -1;
-                    finalSolution = null;
-                }
-                break;
-            }
 
             Iterable<Board> neighbours = currBoard.neighbors();
             for (Board n : neighbours) {
                 SearchNode nNode = new SearchNode(n, curr.moves + 1);
-                nNode.previous = curr;
-                if (!nNode.board.equals(prevBoard)) {
+                if (curr.previous == null || !nNode.board.equals(curr.previous.board)) {
+                    nNode.previous = curr;
                     priorityQ.insert(nNode);
+
                 }
             }
         }
+
+        Stack<Board> solStack = new Stack<>();
+        SearchNode temp = priorityQ.min();
+
+        while (temp.previous != null) {
+            solStack.push(temp.board);
+            temp = temp.previous;
+        }
+        // last board
+        if (initial.equals(temp.board)) {
+            finalMoves = solStack.size();
+            solStack.push(temp.board);
+            finalSolution = solStack;
+        }
+        else { // solution doesn't exist
+            finalMoves = -1;
+            finalSolution = null;
+        }
+
     }
 
     private class SearchNode implements Comparable<SearchNode> {
-        Board board;
-        int moves;
-        SearchNode previous;
+        private Board board;
+        private int moves;
+        private SearchNode previous;
         private int cachedPriority;
 
         SearchNode(Board board, int moves) {
@@ -81,12 +77,12 @@ public class Solver {
 
     // is the initial board solvable? (see below)
     public boolean isSolvable() {
-        return totalMoves != -1;
+        return finalMoves != -1;
     }
 
     // min number of moves to solve initial board; -1 if unsolvable
     public int moves() {
-        return totalMoves;
+        return finalMoves;
     }
 
     // sequence of boards in a shortest solution; null if unsolvable
